@@ -33,12 +33,12 @@ namespace ShareX.Steam
     internal static class Program
     {
         [STAThread]
-        private static void Main()
+        private static void Main(string[] args)
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            Launcher.Run();
+            Launcher.Run(args);
         }
     }
 }

@@ -40,32 +40,39 @@ namespace ShareX.Steam
         private static string UpdateFolderPath => Helpers.GetAbsolutePath("Updates");
         private static string ExecutablePath => Path.Combine(ContentFolderPath, "ShareX.exe");
 
-        public static void Run()
+        public static void Run(string[] args)
         {
-            if (IsShareXRunning())
+            bool isFirstTimeRunning = false;
+
+            if (!IsShareXRunning())
             {
-                return;
+                if (!IsCommandExist(args, "-NoSteam"))
+                {
+                    // Init Steam API
+                }
+
+                if (!Directory.Exists(ContentFolderPath))
+                {
+                    isFirstTimeRunning = true;
+                    DoUpdate();
+                }
+                else if (IsUpdateRequired())
+                {
+                    DoUpdate();
+                }
             }
 
-            // Init Steam API
-
-            if (!Directory.Exists(ContentFolderPath))
-            {
-                // First time running
-                DoUpdate();
-                Application.Run(new LauncherForm());
-            }
-            else if (IsUpdateRequired())
-            {
-                DoUpdate();
-            }
-
-            RunShareX();
+            RunShareX(isFirstTimeRunning);
         }
 
         private static bool IsShareXRunning()
         {
             return Helpers.IsRunning("82E6AC09-0FEF-4390-AD9F-0DD3F5561EFC");
+        }
+
+        private static bool IsCommandExist(string[] args, string command)
+        {
+            return args.Any(arg => arg.Equals(command, StringComparison.InvariantCultureIgnoreCase));
         }
 
         private static bool IsUpdateRequired()
@@ -97,11 +104,20 @@ namespace ShareX.Steam
             }
         }
 
-        private static void RunShareX()
+        private static void RunShareX(bool isFirstTimeRunning)
         {
             try
             {
-                Process.Start(ExecutablePath);
+                ProcessStartInfo startInfo = new ProcessStartInfo(ExecutablePath);
+
+                if (isFirstTimeRunning)
+                {
+                    startInfo.Arguments = "-SteamConfig";
+                }
+
+                Process process = new Process();
+                process.StartInfo = startInfo;
+                process.Start();
             }
             catch (Exception e)
             {
