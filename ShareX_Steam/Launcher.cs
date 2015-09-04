@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 
+using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -37,8 +38,9 @@ namespace ShareX.Steam
     public static class Launcher
     {
         private static string ContentFolderPath => Helpers.GetAbsolutePath("ShareX");
+        private static string ContentExecutablePath => Path.Combine(ContentFolderPath, "ShareX.exe");
         private static string UpdateFolderPath => Helpers.GetAbsolutePath("Updates");
-        private static string ExecutablePath => Path.Combine(ContentFolderPath, "ShareX.exe");
+        private static string UpdateExecutablePath => Path.Combine(UpdateFolderPath, "ShareX.exe");
 
         public static void Run(string[] args)
         {
@@ -46,9 +48,11 @@ namespace ShareX.Steam
 
             if (!IsShareXRunning())
             {
-                if (!IsCommandExist(args, "-NoSteam"))
+                bool isSteamInit = false;
+
+                if (SteamAPI.IsSteamRunning())
                 {
-                    // Init Steam API
+                    isSteamInit = SteamAPI.Init();
                 }
 
                 if (!Directory.Exists(ContentFolderPath))
@@ -59,6 +63,11 @@ namespace ShareX.Steam
                 else if (IsUpdateRequired())
                 {
                     DoUpdate();
+                }
+
+                if (isSteamInit)
+                {
+                    SteamAPI.Shutdown();
                 }
             }
 
@@ -79,8 +88,13 @@ namespace ShareX.Steam
         {
             try
             {
-                FileVersionInfo contentVersionInfo = FileVersionInfo.GetVersionInfo(ContentFolderPath);
-                FileVersionInfo updateVersionInfo = FileVersionInfo.GetVersionInfo(UpdateFolderPath);
+                if (!File.Exists(ContentExecutablePath))
+                {
+                    return true;
+                }
+
+                FileVersionInfo contentVersionInfo = FileVersionInfo.GetVersionInfo(ContentExecutablePath);
+                FileVersionInfo updateVersionInfo = FileVersionInfo.GetVersionInfo(UpdateExecutablePath);
 
                 return Helpers.CompareVersion(contentVersionInfo.FileVersion, updateVersionInfo.FileVersion) < 0;
             }
@@ -108,7 +122,7 @@ namespace ShareX.Steam
         {
             try
             {
-                ProcessStartInfo startInfo = new ProcessStartInfo(ExecutablePath);
+                ProcessStartInfo startInfo = new ProcessStartInfo(ContentExecutablePath);
 
                 if (isFirstTimeRunning)
                 {
