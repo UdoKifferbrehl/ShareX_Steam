@@ -67,18 +67,21 @@ namespace ShareX.Steam
                 }
             }
 
-            string arguments = "";
-
-            if (isFirstTimeRunning)
+            if (File.Exists(ContentExecutablePath))
             {
-                arguments = "-SteamConfig";
-            }
-            else if (Helpers.IsCommandExist(args, "-silent"))
-            {
-                arguments = "-silent";
-            }
+                string arguments = "";
 
-            RunShareX(arguments);
+                if (isFirstTimeRunning)
+                {
+                    arguments = "-SteamConfig";
+                }
+                else if (Helpers.IsCommandExist(args, "-silent"))
+                {
+                    arguments = "-silent";
+                }
+
+                RunShareX(arguments);
+            }
         }
 
         private static bool IsShareXRunning()
@@ -112,6 +115,11 @@ namespace ShareX.Steam
         {
             try
             {
+                if (!Directory.Exists(ContentFolderPath))
+                {
+                    Directory.CreateDirectory(ContentFolderPath);
+                }
+
                 File.Create(UpdatingTempFilePath).Dispose(); // In case updating terminate middle of it, so in next Launcher start it can repair it
                 Helpers.CopyAll(UpdateFolderPath, ContentFolderPath);
                 File.Delete(UpdatingTempFilePath);
