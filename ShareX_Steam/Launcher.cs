@@ -25,13 +25,8 @@
 
 using Steamworks;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Windows.Forms;
 
 namespace ShareX.Steam
 {
@@ -79,11 +74,6 @@ namespace ShareX.Steam
             return Helpers.IsRunning("82E6AC09-0FEF-4390-AD9F-0DD3F5561EFC");
         }
 
-        private static bool IsCommandExist(string[] args, string command)
-        {
-            return args.Any(arg => arg.Equals(command, StringComparison.InvariantCultureIgnoreCase));
-        }
-
         private static bool IsUpdateRequired()
         {
             try
@@ -123,6 +113,7 @@ namespace ShareX.Steam
             try
             {
                 ProcessStartInfo startInfo = new ProcessStartInfo(ContentExecutablePath);
+                startInfo.UseShellExecute = false;
 
                 if (isFirstTimeRunning)
                 {

@@ -24,11 +24,8 @@
 #endregion License Information (GPL v3)
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -111,6 +108,11 @@ namespace ShareX.Steam
                 DirectoryInfo nextTargetSubDir = target.CreateSubdirectory(diSourceSubDir.Name);
                 CopyAll(diSourceSubDir, nextTargetSubDir);
             }
+        }
+
+        public static bool IsCommandExist(string[] args, string command)
+        {
+            return args.Any(arg => arg.Equals(command, StringComparison.InvariantCultureIgnoreCase));
         }
     }
 }
