@@ -67,7 +67,18 @@ namespace ShareX.Steam
                 }
             }
 
-            RunShareX(isFirstTimeRunning);
+            string arguments = "";
+
+            if (isFirstTimeRunning)
+            {
+                arguments = "-SteamConfig";
+            }
+            else if (Helpers.IsCommandExist(args, "-silent"))
+            {
+                arguments = "-silent";
+            }
+
+            RunShareX(arguments);
         }
 
         private static bool IsShareXRunning()
@@ -111,17 +122,16 @@ namespace ShareX.Steam
             }
         }
 
-        private static void RunShareX(bool isFirstTimeRunning)
+        private static void RunShareX(string arguments = "")
         {
             try
             {
-                ProcessStartInfo startInfo = new ProcessStartInfo(ContentExecutablePath);
-                startInfo.UseShellExecute = false;
-
-                if (isFirstTimeRunning)
+                ProcessStartInfo startInfo = new ProcessStartInfo()
                 {
-                    startInfo.Arguments = "-SteamConfig";
-                }
+                    Arguments = arguments,
+                    FileName = ContentExecutablePath,
+                    UseShellExecute = false
+                };
 
                 Process process = new Process();
                 process.StartInfo = startInfo;
