@@ -36,6 +36,7 @@ namespace ShareX.Steam
         private static string ContentExecutablePath => Path.Combine(ContentFolderPath, "ShareX.exe");
         private static string UpdateFolderPath => Helpers.GetAbsolutePath("Updates");
         private static string UpdateExecutablePath => Path.Combine(UpdateFolderPath, "ShareX.exe");
+        private static string UpdatingTempFilePath => Path.Combine(ContentFolderPath, "Updating");
 
         public static void Run(string[] args)
         {
@@ -78,7 +79,7 @@ namespace ShareX.Steam
         {
             try
             {
-                if (!File.Exists(ContentExecutablePath))
+                if (!File.Exists(ContentExecutablePath) || File.Exists(UpdatingTempFilePath))
                 {
                     return true;
                 }
@@ -100,7 +101,9 @@ namespace ShareX.Steam
         {
             try
             {
+                File.Create(UpdatingTempFilePath).Dispose(); // In case updating terminate middle of it, so in next Launcher start it can repair it
                 Helpers.CopyAll(UpdateFolderPath, ContentFolderPath);
+                File.Delete(UpdatingTempFilePath);
             }
             catch (Exception e)
             {
