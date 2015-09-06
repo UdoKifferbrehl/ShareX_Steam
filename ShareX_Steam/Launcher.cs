@@ -134,10 +134,12 @@ namespace ShareX.Steam
         {
             try
             {
+                // Workaround for don't show "In-app"
                 ProcessStartInfo startInfo = new ProcessStartInfo()
                 {
-                    Arguments = arguments,
-                    FileName = ContentExecutablePath,
+                    Arguments = $"/C start \"\" \"{ContentExecutablePath}\" {arguments}",
+                    CreateNoWindow = true,
+                    FileName = "cmd.exe",
                     UseShellExecute = false
                 };
 
