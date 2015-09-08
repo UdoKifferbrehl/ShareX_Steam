@@ -120,7 +120,7 @@ namespace ShareX.Steam
                     Directory.CreateDirectory(ContentFolderPath);
                 }
 
-                File.Create(UpdatingTempFilePath).Dispose(); // In case updating terminate middle of it, so in next Launcher start it can repair it
+                File.Create(UpdatingTempFilePath).Dispose(); // In case updating terminate middle of it, in next Launcher start it can repair it
                 Helpers.CopyAll(UpdateFolderPath, ContentFolderPath);
                 File.Delete(UpdatingTempFilePath);
             }
@@ -134,18 +134,30 @@ namespace ShareX.Steam
         {
             try
             {
-                // Workaround for don't show "In-app"
-                ProcessStartInfo startInfo = new ProcessStartInfo()
-                {
-                    Arguments = $"/C start \"\" \"{ContentExecutablePath}\" {arguments}",
-                    CreateNoWindow = true,
-                    FileName = "cmd.exe",
-                    UseShellExecute = false
-                };
+                ProcessStartInfo startInfo;
 
-                Process process = new Process();
-                process.StartInfo = startInfo;
-                process.Start();
+                if (File.Exists(Path.Combine(ContentFolderPath, "Steam")))
+                {
+                    startInfo = new ProcessStartInfo()
+                    {
+                        Arguments = arguments,
+                        FileName = ContentExecutablePath,
+                        UseShellExecute = true
+                    };
+                }
+                else
+                {
+                    // Workaround for don't show "In-app"
+                    startInfo = new ProcessStartInfo()
+                    {
+                        Arguments = $"/C start \"\" \"{ContentExecutablePath}\" {arguments}",
+                        CreateNoWindow = true,
+                        FileName = Path.Combine(Environment.SystemDirectory, "cmd.exe"),
+                        UseShellExecute = false
+                    };
+                }
+
+                Process.Start(startInfo);
             }
             catch (Exception e)
             {
