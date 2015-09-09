@@ -147,12 +147,19 @@ namespace ShareX.Steam
                 }
                 else
                 {
+                    string path = Path.Combine(Environment.SystemDirectory, "cmd.exe");
+
+                    if (!File.Exists(path))
+                    {
+                        path = "cmd.exe";
+                    }
+
                     // Workaround for don't show "In-app"
                     startInfo = new ProcessStartInfo()
                     {
                         Arguments = $"/C start \"\" \"{ContentExecutablePath}\" {arguments}",
                         CreateNoWindow = true,
-                        FileName = Path.Combine(Environment.SystemDirectory, "cmd.exe"),
+                        FileName = path,
                         UseShellExecute = false
                     };
                 }
