@@ -27,6 +27,7 @@ using Steamworks;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Windows.Forms;
 
 namespace ShareX.Steam
 {
@@ -42,6 +43,12 @@ namespace ShareX.Steam
 
         public static void Run(string[] args)
         {
+            if (Helpers.IsCommandExist(args, "-Uninstall"))
+            {
+                UninstallShareX();
+                return;
+            }
+
             if (!IsShareXRunning())
             {
                 bool isSteamInit = false;
@@ -184,6 +191,33 @@ namespace ShareX.Steam
             catch (Exception e)
             {
                 Helpers.ShowError(e);
+            }
+        }
+
+        private static void UninstallShareX()
+        {
+            while (IsShareXRunning())
+            {
+                if (MessageBox.Show("ShareX is currently running.\r\nPlease close ShareX and press \"Retry\" button after it is closed.", "ShareX - Uninstall",
+                    MessageBoxButtons.RetryCancel, MessageBoxIcon.Warning) == DialogResult.Cancel)
+                {
+                    return;
+                }
+            }
+
+            if (Directory.Exists(ContentFolderPath))
+            {
+                if (File.Exists(ContentExecutablePath))
+                {
+                    Process process = Process.Start(ContentExecutablePath, "-Uninstall");
+
+                    if (process != null)
+                    {
+                        process.WaitForExit();
+                    }
+                }
+
+                Directory.Delete(ContentFolderPath, true);
             }
         }
     }

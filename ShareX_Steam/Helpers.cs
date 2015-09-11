@@ -47,8 +47,7 @@ namespace ShareX.Steam
         {
             try
             {
-                Mutex mutex = Mutex.OpenExisting(name);
-                mutex.ReleaseMutex();
+                Mutex.OpenExisting(name);
             }
             catch
             {
