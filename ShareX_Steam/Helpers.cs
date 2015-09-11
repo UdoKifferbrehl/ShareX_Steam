@@ -45,16 +45,19 @@ namespace ShareX.Steam
 
         public static bool IsRunning(string name)
         {
+            bool createdNew = true;
+
             try
             {
-                Mutex.OpenExisting(name);
+                using (Mutex mutex = new Mutex(false, name, out createdNew))
+                {
+                }
             }
             catch
             {
-                return false;
             }
 
-            return true;
+            return !createdNew;
         }
 
         /// <summary>
