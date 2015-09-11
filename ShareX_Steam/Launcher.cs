@@ -38,10 +38,10 @@ namespace ShareX.Steam
         private static string UpdateExecutablePath => Path.Combine(UpdateFolderPath, "ShareX.exe");
         private static string UpdatingTempFilePath => Path.Combine(ContentFolderPath, "Updating");
 
+        private static bool IsFirstTimeRunning { get; set; }
+
         public static void Run(string[] args)
         {
-            bool isFirstTimeRunning = false;
-
             if (!IsShareXRunning())
             {
                 bool isSteamInit = false;
@@ -51,12 +51,7 @@ namespace ShareX.Steam
                     isSteamInit = SteamAPI.Init();
                 }
 
-                if (!Directory.Exists(ContentFolderPath))
-                {
-                    isFirstTimeRunning = true;
-                    DoUpdate();
-                }
-                else if (IsUpdateRequired())
+                if (IsUpdateRequired())
                 {
                     DoUpdate();
                 }
@@ -71,12 +66,14 @@ namespace ShareX.Steam
             {
                 string arguments = "";
 
-                if (isFirstTimeRunning)
+                if (IsFirstTimeRunning)
                 {
+                    // Show first time config window
                     arguments = "-SteamConfig";
                 }
                 else if (Helpers.IsCommandExist(args, "-silent"))
                 {
+                    // Don't show ShareX main window
                     arguments = "-silent";
                 }
 
@@ -86,6 +83,7 @@ namespace ShareX.Steam
 
         private static bool IsShareXRunning()
         {
+            // Check ShareX mutex
             return Helpers.IsRunning("82E6AC09-0FEF-4390-AD9F-0DD3F5561EFC");
         }
 
@@ -93,13 +91,28 @@ namespace ShareX.Steam
         {
             try
             {
-                if (!File.Exists(ContentExecutablePath) || File.Exists(UpdatingTempFilePath))
+                // First time running?
+                if (!Directory.Exists(ContentFolderPath) || !File.Exists(ContentExecutablePath))
+                {
+                    IsFirstTimeRunning = true;
+                    return true;
+                }
+
+                // Need repair?
+                if (File.Exists(UpdatingTempFilePath))
                 {
                     return true;
                 }
 
+                // Need update?
                 FileVersionInfo contentVersionInfo = FileVersionInfo.GetVersionInfo(ContentExecutablePath);
                 FileVersionInfo updateVersionInfo = FileVersionInfo.GetVersionInfo(UpdateExecutablePath);
+
+                // For testing purposes
+                if (Helpers.CompareVersion(contentVersionInfo.FileVersion, "10.2.2.0") <= 0)
+                {
+                    IsFirstTimeRunning = true;
+                }
 
                 return Helpers.CompareVersion(contentVersionInfo.FileVersion, updateVersionInfo.FileVersion) < 0;
             }
@@ -120,7 +133,8 @@ namespace ShareX.Steam
                     Directory.CreateDirectory(ContentFolderPath);
                 }
 
-                File.Create(UpdatingTempFilePath).Dispose(); // In case updating terminate middle of it, in next Launcher start it can repair it
+                // In case updating terminate middle of it, in next Launcher start it can repair
+                File.Create(UpdatingTempFilePath).Dispose();
                 Helpers.CopyAll(UpdateFolderPath, ContentFolderPath);
                 File.Delete(UpdatingTempFilePath);
             }
@@ -136,6 +150,7 @@ namespace ShareX.Steam
             {
                 ProcessStartInfo startInfo;
 
+                // Show "In-app"?
                 if (File.Exists(Path.Combine(ContentFolderPath, "Steam")))
                 {
                     startInfo = new ProcessStartInfo()
