@@ -43,7 +43,7 @@ namespace ShareX.Steam
 
         public static void Run(string[] args)
         {
-            if (Helpers.IsCommandExist(args, "-Uninstall"))
+            if (Helpers.IsCommandExist(args, "-uninstall"))
             {
                 UninstallShareX();
                 return;
@@ -198,26 +198,33 @@ namespace ShareX.Steam
         {
             while (IsShareXRunning())
             {
-                if (MessageBox.Show("ShareX is currently running.\r\n\r\nPlease close ShareX and press \"Retry\" button after it is closed.", "ShareX - Uninstall",
+                if (MessageBox.Show("ShareX is currently running.\r\n\r\nPlease close ShareX and press \"Retry\" button after it is closed.", "ShareX - Uninstaller",
                     MessageBoxButtons.RetryCancel, MessageBoxIcon.Warning) == DialogResult.Cancel)
                 {
                     return;
                 }
             }
 
-            if (Directory.Exists(ContentFolderPath))
+            try
             {
-                if (File.Exists(ContentExecutablePath))
+                if (Directory.Exists(ContentFolderPath))
                 {
-                    Process process = Process.Start(ContentExecutablePath, "-Uninstall");
-
-                    if (process != null)
+                    if (File.Exists(ContentExecutablePath))
                     {
-                        process.WaitForExit();
-                    }
-                }
+                        Process process = Process.Start(ContentExecutablePath, "-uninstall");
 
-                Directory.Delete(ContentFolderPath, true);
+                        if (process != null)
+                        {
+                            process.WaitForExit();
+                        }
+                    }
+
+                    Directory.Delete(ContentFolderPath, true);
+                }
+            }
+            catch (Exception e)
+            {
+                Helpers.ShowError(e);
             }
         }
     }
