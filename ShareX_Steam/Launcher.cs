@@ -27,6 +27,7 @@ using Steamworks;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace ShareX.Steam
@@ -151,24 +152,41 @@ namespace ShareX.Steam
             }
         }
 
+        [DllImport("kernel32.dll")]
+        private static extern uint WinExec(string lpCmdLine, uint uCmdShow);
+
         private static void RunShareX(string arguments = "")
         {
             try
             {
-                ProcessStartInfo startInfo;
-
                 // Show "In-app"?
                 if (File.Exists(Path.Combine(ContentFolderPath, "Steam")))
                 {
-                    startInfo = new ProcessStartInfo()
+                    ProcessStartInfo startInfo = new ProcessStartInfo()
                     {
                         Arguments = arguments,
                         FileName = ContentExecutablePath,
                         UseShellExecute = true
                     };
+
+                    Process.Start(startInfo);
                 }
                 else
                 {
+                    try
+                    {
+                        // Workaround for don't show "In-app"
+                        uint result = WinExec($"\"{ContentExecutablePath}\" {arguments}", 5);
+
+                        // If the function succeeds, the return value is greater than 31
+                        if (result > 31)
+                        {
+                            return;
+                        }
+                    }
+                    catch { }
+
+                    // Workaround 2
                     string path = Path.Combine(Environment.SystemDirectory, "cmd.exe");
 
                     if (!File.Exists(path))
@@ -176,17 +194,16 @@ namespace ShareX.Steam
                         path = "cmd.exe";
                     }
 
-                    // Workaround for don't show "In-app"
-                    startInfo = new ProcessStartInfo()
+                    ProcessStartInfo startInfo = new ProcessStartInfo()
                     {
                         Arguments = $"/C start \"\" \"{ContentExecutablePath}\" {arguments}",
                         CreateNoWindow = true,
                         FileName = path,
                         UseShellExecute = false
                     };
-                }
 
-                Process.Start(startInfo);
+                    Process.Start(startInfo);
+                }
             }
             catch (Exception e)
             {
