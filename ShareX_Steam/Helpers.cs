@@ -26,6 +26,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -33,6 +34,9 @@ namespace ShareX.Steam
 {
     public static class Helpers
     {
+        [DllImport("kernel32.dll")]
+        public static extern uint WinExec(string lpCmdLine, uint uCmdShow);
+
         public static string GetAbsolutePath(string path)
         {
             if (!Path.IsPathRooted(path)) // Is relative path?

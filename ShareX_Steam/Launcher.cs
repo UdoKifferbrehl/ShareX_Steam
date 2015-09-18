@@ -27,7 +27,6 @@ using Steamworks;
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace ShareX.Steam
@@ -116,12 +115,6 @@ namespace ShareX.Steam
                 FileVersionInfo contentVersionInfo = FileVersionInfo.GetVersionInfo(ContentExecutablePath);
                 FileVersionInfo updateVersionInfo = FileVersionInfo.GetVersionInfo(UpdateExecutablePath);
 
-                // For testing purposes
-                if (Helpers.CompareVersion(contentVersionInfo.FileVersion, "10.2.2.0") <= 0)
-                {
-                    IsFirstTimeRunning = true;
-                }
-
                 return Helpers.CompareVersion(contentVersionInfo.FileVersion, updateVersionInfo.FileVersion) < 0;
             }
             catch (Exception e)
@@ -152,9 +145,6 @@ namespace ShareX.Steam
             }
         }
 
-        [DllImport("kernel32.dll")]
-        private static extern uint WinExec(string lpCmdLine, uint uCmdShow);
-
         private static void RunShareX(string arguments = "")
         {
             try
@@ -176,7 +166,7 @@ namespace ShareX.Steam
                     try
                     {
                         // Workaround for don't show "In-app"
-                        uint result = WinExec($"\"{ContentExecutablePath}\" {arguments}", 5);
+                        uint result = Helpers.WinExec($"\"{ContentExecutablePath}\" {arguments}", 5);
 
                         // If the function succeeds, the return value is greater than 31
                         if (result > 31)
