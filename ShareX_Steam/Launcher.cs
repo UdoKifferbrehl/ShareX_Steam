@@ -27,6 +27,7 @@ using Steamworks;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace ShareX.Steam
@@ -43,16 +44,18 @@ namespace ShareX.Steam
 
         public static void Run(string[] args)
         {
+            Stopwatch startTimer = Stopwatch.StartNew();
+
             if (Helpers.IsCommandExist(args, "-uninstall"))
             {
                 UninstallShareX();
                 return;
             }
 
+            bool isSteamInit = false;
+
             if (!IsShareXRunning())
             {
-                bool isSteamInit = false;
-
                 if (SteamAPI.IsSteamRunning())
                 {
                     isSteamInit = SteamAPI.Init();
@@ -85,6 +88,19 @@ namespace ShareX.Steam
                 }
 
                 RunShareX(arguments);
+
+                if (isSteamInit)
+                {
+                    // Reason for this workaround because Steam only allows writing review if you played game at least 5 minutes
+                    // So launcher will stay on for 10 seconds and eventually users can reach 5 minutes that way (It will require 30 times opening)
+                    // Otherwise nobody can write review
+                    int waitTime = 10000 - (int)startTimer.ElapsedMilliseconds;
+
+                    if (waitTime > 0)
+                    {
+                        Thread.Sleep(waitTime);
+                    }
+                }
             }
         }
 
