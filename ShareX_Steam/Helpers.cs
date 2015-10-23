@@ -118,7 +118,12 @@ namespace ShareX.Steam
 
         public static bool IsCommandExist(string[] args, string command)
         {
-            return args.Any(arg => arg.Equals(command, StringComparison.InvariantCultureIgnoreCase));
+            if (args != null && !string.IsNullOrEmpty(command))
+            {
+                return args.Any(arg => !string.IsNullOrEmpty(arg) && arg.Equals(command, StringComparison.InvariantCultureIgnoreCase));
+            }
+
+            return false;
         }
     }
 }

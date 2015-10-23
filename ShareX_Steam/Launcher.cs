@@ -219,17 +219,17 @@ namespace ShareX.Steam
 
         private static void UninstallShareX()
         {
-            while (IsShareXRunning())
-            {
-                if (MessageBox.Show("ShareX is currently running.\r\n\r\nPlease close ShareX and press \"Retry\" button after it is closed.", "ShareX - Uninstaller",
-                    MessageBoxButtons.RetryCancel, MessageBoxIcon.Warning) == DialogResult.Cancel)
-                {
-                    return;
-                }
-            }
-
             try
             {
+                while (IsShareXRunning())
+                {
+                    if (MessageBox.Show("ShareX is currently running.\r\n\r\nPlease close ShareX and press \"Retry\" button after it is closed.", "ShareX - Uninstaller",
+                        MessageBoxButtons.RetryCancel, MessageBoxIcon.Warning) == DialogResult.Cancel)
+                    {
+                        return;
+                    }
+                }
+
                 if (Directory.Exists(ContentFolderPath))
                 {
                     if (File.Exists(ContentExecutablePath))
