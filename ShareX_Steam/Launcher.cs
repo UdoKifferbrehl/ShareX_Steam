@@ -56,6 +56,15 @@ namespace ShareX.Steam
 
             if (!IsShareXRunning())
             {
+                // Can be used in startup shortcut if user wants to show "In-app" always
+                if (Helpers.IsCommandExist(args, "-WaitSteam"))
+                {
+                    for (int i = 0; i < 10 && !SteamAPI.IsSteamRunning(); i++)
+                    {
+                        Thread.Sleep(1000);
+                    }
+                }
+
                 if (SteamAPI.IsSteamRunning())
                 {
                     isSteamInit = SteamAPI.Init();
