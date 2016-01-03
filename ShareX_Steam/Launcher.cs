@@ -36,11 +36,14 @@ namespace ShareX.Steam
     {
         private static string ContentFolderPath => Helpers.GetAbsolutePath("ShareX");
         private static string ContentExecutablePath => Path.Combine(ContentFolderPath, "ShareX.exe");
+        private static string ContentSteamFilePath => Path.Combine(ContentFolderPath, "Steam");
         private static string UpdateFolderPath => Helpers.GetAbsolutePath("Updates");
         private static string UpdateExecutablePath => Path.Combine(UpdateFolderPath, "ShareX.exe");
         private static string UpdatingTempFilePath => Path.Combine(ContentFolderPath, "Updating");
 
         private static bool IsFirstTimeRunning { get; set; }
+        private static bool IsStartupRun { get; set; }
+        private static bool ShowInApp => File.Exists(ContentSteamFilePath);
 
         public static void Run(string[] args)
         {
@@ -54,10 +57,12 @@ namespace ShareX.Steam
 
             bool isSteamInit = false;
 
+            IsStartupRun = Helpers.IsCommandExist(args, "-silent");
+
             if (!IsShareXRunning())
             {
-                // Can be used in startup shortcut if user wants to show "In-app" always
-                if (Helpers.IsCommandExist(args, "-WaitSteam"))
+                // If running on startup and need to show "In-app" then wait until Steam is open
+                if (IsStartupRun && ShowInApp)
                 {
                     for (int i = 0; i < 10 && !SteamAPI.IsSteamRunning(); i++)
                     {
@@ -90,7 +95,7 @@ namespace ShareX.Steam
                     // Show first time config window
                     arguments = "-SteamConfig";
                 }
-                else if (Helpers.IsCommandExist(args, "-silent"))
+                else if (IsStartupRun)
                 {
                     // Don't show ShareX main window
                     arguments = "-silent";
@@ -174,8 +179,7 @@ namespace ShareX.Steam
         {
             try
             {
-                // Show "In-app"?
-                if (File.Exists(Path.Combine(ContentFolderPath, "Steam")))
+                if (ShowInApp)
                 {
                     ProcessStartInfo startInfo = new ProcessStartInfo()
                     {
